@@ -38,7 +38,7 @@ The receiver listens on port `8787` by default and accepts:
 
 패키지 식별자는 `com.dinkisstyle.linuxbattery` 입니다. 이 앱은 에이전트 앱으로 설정되어 있어 독(Dock)에는 표시되지 않고 메뉴 바에만 표시됩니다.
 
-메뉴에는 '로그인 시 시작' 항목이 포함되어 있습니다. 이는 macOS 로그인 항목을 사용하여 번들 앱 빌드에서 작동합니다. macOS 에서 승인 상태를 보인다면 시스템 설정 > 일반 > 로그인 항목에서 `DKST Linux Battery` 를 승인하세요.
+메뉴에는 '로그인 시 시작' 항목이 포함되어 있습니다. 이는 macOS 로그인 항목을 사용하여 번들 앱 빌드에서 작동합니다. macOS 에서 승인이 필요하다면 시스템 설정 > 일반 > 로그인 항목에서 `DKST Linux Battery` 를 승인하세요.
 
 수신자는 기본으로 포트 `8787` 을 수신하며 다음을 허용합니다:
 
@@ -70,7 +70,7 @@ curl -i -X POST http://127.0.0.1:8787/battery \
 
 Use the macOS menu bar app's `Copy API Key` item to copy the key. `Regenerate` creates a new key and immediately invalidates the old one.
 
-macOS 메뉴 바 앱의 `API 키 복사` 항목을 사용하여 키를 복사합니다. `재발생`은 새 키를 생성하고 즉시 기존 키를 무효화합니다.
+macOS 메뉴 바 앱의 `Copy API Key` 항목을 사용하여 키를 복사합니다. `Regenerate`은 새 키를 생성하고 즉시 기존 키를 무효화합니다.
 
 ## Linux sender (리눅스 배터리 정보 송신)
 
