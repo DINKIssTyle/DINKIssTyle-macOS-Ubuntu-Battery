@@ -1,0 +1,6 @@
+.DS_Store
+# SwiftPM build cache. This is not the tracked root build/ folder.
+/.build/
+__pycache__/
+linux-agent/linux-battery-agent
+/macos/.build

@@ -1,0 +1,15 @@
+[Unit]
+Description=Send Linux battery status to macOS menu bar receiver
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=LINUX_BATTERY_SERVER=http://macbook.local:8787/battery
+Environment=LINUX_BATTERY_API_KEY=replace-with-api-key-from-macos-menu
+ExecStart=/usr/local/bin/DKST\x20Linux\x20Battery\x20Agent
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
