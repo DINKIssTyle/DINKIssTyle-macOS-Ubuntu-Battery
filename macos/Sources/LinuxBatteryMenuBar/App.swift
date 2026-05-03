@@ -16,6 +16,9 @@ final class AppState: ObservableObject {
     @Published var launchAtLoginStatus: String
 
     private var server: BatteryHTTPServer?
+    private var lastReceivedTime: Date?
+    private var measuredInterval: TimeInterval?
+    private var timeoutTask: Task<Void, Never>?
 
     init() {
         let defaults = UserDefaults.standard
@@ -69,7 +72,7 @@ final class AppState: ObservableObject {
 
     var detailText: String {
         guard let battery else {
-            return "No battery data received yet."
+            return lastReceivedTime == nil ? "No battery data received yet." : "Idle (Connection lost)"
         }
 
         var parts = [battery.host, "\(battery.percent)%", battery.status]
@@ -81,11 +84,15 @@ final class AppState: ObservableObject {
 
     func startServer() {
         server?.stop()
+        timeoutTask?.cancel()
+        battery = nil
+        lastReceivedTime = nil
+        measuredInterval = nil
+
         do {
             let newServer = try BatteryHTTPServer(port: port, apiKey: apiKey) { [weak self] payload in
                 Task { @MainActor in
-                    self?.battery = payload
-                    self?.serverStatus = "Listening on :\(self?.port ?? 0)"
+                    self?.handleIncomingPayload(payload)
                 }
             }
             try newServer.start()
@@ -93,6 +100,33 @@ final class AppState: ObservableObject {
             serverStatus = "Listening on :\(port)"
         } catch {
             serverStatus = "Server error: \(error.localizedDescription)"
+        }
+    }
+
+    private func handleIncomingPayload(_ payload: BatteryPayload) {
+        let now = Date()
+        if let last = lastReceivedTime {
+            let interval = now.timeIntervalSince(last)
+            if let existing = measuredInterval {
+                // Smooth the interval measurement to avoid jitter
+                measuredInterval = existing * 0.8 + interval * 0.2
+            } else {
+                measuredInterval = interval
+            }
+        }
+        lastReceivedTime = now
+        battery = payload
+        serverStatus = "Listening on :\(port)"
+
+        timeoutTask?.cancel()
+        // Timeout if no data for 3.5x the measured interval, with a minimum of 15 seconds
+        let timeout = max((measuredInterval ?? 5) * 3.5, 15)
+
+        timeoutTask = Task {
+            try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+            if !Task.isCancelled {
+                self.battery = nil
+            }
         }
     }
 
