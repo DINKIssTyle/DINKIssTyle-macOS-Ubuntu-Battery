@@ -2,7 +2,7 @@
 
 
 <div align="center">
-<img src="./AppIcon.png" alt="" width="128">
+<img src="doc/AppIcon.png" alt="" width="128">
   <br><br>
 </div>
 
@@ -11,7 +11,10 @@ Linux sends its battery status to a macOS menu bar app. macOS listens for HTTP P
 
 Linux 는 배터리 상태를 macOS 메뉴 바 앱으로 전송합니다. macOS 는 HTTP POST 요청을 수신하고, 메뉴 바에서 Linux 배터리 퍼센트를 표시합니다.
 
-
+<div align="center">
+<img src="doc/macOS.png" alt="" width="550">
+  <br>
+</div>
 
 ## macOS receiver (리눅스 배터리 정보 수신)
 
@@ -110,3 +113,10 @@ systemctl --user enable --now linux-battery-agent.service
 Edit `LINUX_BATTERY_SERVER` and `LINUX_BATTERY_API_KEY` in the service file before enabling it.
 
 Edit `LINUX_BATTERY_SERVER` 와 `LINUX_BATTERY_API_KEY` 를 서비스 파일에서 편집한 후 활성화하세요.
+
+
+
+
+<div align="center">
+<a href="https://github.com/DINKIssTyle/DINKIssTyle-Markdown-Browser" target="_blank"><img src="https://github.com/DINKIssTyle/DINKIssTyle-Markdown-Browser/blob/main/DKST-Markdown.png?raw=true" width="150"></a>
+</div>
