@@ -8,6 +8,7 @@ import SwiftUI
 @MainActor
 final class AppState: ObservableObject {
     @Published var port: UInt16
+    @Published var colorIcon: Bool
     @Published var showPercent: Bool
     @Published var battery: BatteryPayload?
     @Published var serverStatus = "Starting"
@@ -24,6 +25,7 @@ final class AppState: ObservableObject {
         let defaults = UserDefaults.standard
         let savedPort = defaults.integer(forKey: "receivePort")
         port = savedPort > 0 ? UInt16(savedPort) : 8787
+        colorIcon = defaults.object(forKey: "colorIcon") as? Bool ?? false
         showPercent = defaults.object(forKey: "showPercent") as? Bool ?? true
         let storedAPIKey = defaults.string(forKey: "apiKey") ?? Self.generateAPIKey()
         apiKey = storedAPIKey
@@ -68,6 +70,22 @@ final class AppState: ObservableObject {
         default:
             return "battery.100percent"
         }
+    }
+
+    var batteryIconColor: NSColor? {
+        guard colorIcon, let battery else {
+            return nil
+        }
+
+        if battery.percent < 10 {
+            return NSColor(red: 251 / 255, green: 20 / 255, blue: 0 / 255, alpha: 1)
+        }
+
+        if battery.percent < 20 {
+            return NSColor(red: 254 / 255, green: 204 / 255, blue: 6 / 255, alpha: 1)
+        }
+
+        return NSColor(red: 54 / 255, green: 199 / 255, blue: 91 / 255, alpha: 1)
     }
 
     var detailText: String {
@@ -139,6 +157,11 @@ final class AppState: ObservableObject {
     func setShowPercent(_ enabled: Bool) {
         showPercent = enabled
         UserDefaults.standard.set(enabled, forKey: "showPercent")
+    }
+
+    func setColorIcon(_ enabled: Bool) {
+        colorIcon = enabled
+        UserDefaults.standard.set(enabled, forKey: "colorIcon")
     }
 
     func setLaunchAtLogin(_ enabled: Bool) {
@@ -459,6 +482,11 @@ struct MenuContent: View {
                 Button("Apply", action: applyPort)
             }
 
+            Toggle("Color icon", isOn: Binding(
+                get: { state.colorIcon },
+                set: { state.setColorIcon($0) }
+            ))
+
             Toggle("Show percentage", isOn: Binding(
                 get: { state.showPercent },
                 set: { state.setShowPercent($0) }
@@ -509,8 +537,16 @@ struct MenuBarLabel: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: state.batteryLevelSymbol)
-                .font(.system(size: 14, weight: .semibold))
+            if let color = state.batteryIconColor {
+                Image(nsImage: Self.tintedSymbolImage(named: state.batteryLevelSymbol, color: color))
+                    .renderingMode(.original)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 18, height: 14)
+            } else {
+                Image(systemName: state.batteryLevelSymbol)
+                    .font(.system(size: 14, weight: .semibold))
+            }
 
             Text(state.menuBarTitle)
                 .font(.system(size: 13, weight: .medium))
@@ -518,6 +554,28 @@ struct MenuBarLabel: View {
         }
         .lineLimit(1)
         .fixedSize()
+    }
+
+    private static func tintedSymbolImage(named symbolName: String, color: NSColor) -> NSImage {
+        let configuration = NSImage.SymbolConfiguration(pointSize: 14, weight: .semibold)
+        guard let symbol = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)?
+            .withSymbolConfiguration(configuration) else {
+            return NSImage(size: NSSize(width: 18, height: 14))
+        }
+
+        let image = NSImage(size: symbol.size)
+        image.lockFocus()
+        color.setFill()
+        NSRect(origin: .zero, size: symbol.size).fill()
+        symbol.draw(
+            in: NSRect(origin: .zero, size: symbol.size),
+            from: NSRect(origin: .zero, size: symbol.size),
+            operation: .destinationIn,
+            fraction: 1
+        )
+        image.unlockFocus()
+        image.isTemplate = false
+        return image
     }
 }
 
